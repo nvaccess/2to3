@@ -1,4 +1,38 @@
 This is en extracted and modified version of the python 2to3 tool (from python 3.7.3)
 
 Python 3 should be used to execute it.
-Run with: `py -3 path/to/2to3 python2file.py`
+Generally it can be run with: `py -3 path/to/2to3 python2file.py`
+However a fixer is now included that is not likely useful in a general case, the nvdastrings fixer.
+You can run this with: `2to3 -f nvdastrings ./`
+Other useful options are:
+`-n` to suppress backups
+`-w` to modify files in place
+`-f` is the list of fixers
+`--help` for more options
+
+2to3 -n -w -f nvdastrings ./
+
+Run the tests with: `py -3 -m nose -e 'XXX.*' lib2to3/tests/test_fixers.py`
+
+`-e` excludes tests starting with "XXX" because they are not yet implemented, this is how 2to3 ships with python 3.7.3.
+
+## nvdastrings fixer
+
+This was added to help facilitate the inspection and conversion of various python 2.7 str objects to python 3.7.
+Some thought must be put into whether these strings should be raw, unicode, or bytes.
+The fixer tags all strings without a specifier ('r', 'u' or 'b'), it also tags raw strings.
+Strings are taged by putting `p3_Str_` before and `_p3_Str` after.
+For raw strings, which may also be interesting to inspect for correct usage `p3_Raw` is used.
+By collecting and aggregating the output of this, we can determine a set of general cases that should be excluded.
+These are added directly to the fixer, which can be re-run, reducing the number of tags that must be inspected.
+A handy way to do this is:
+```
+git grep -oh -P 'p3_Str_.*?_p3_Str' | sort | uniq -c | sort -r > ../mostUsedStrings.txt
+```
+
+### excluding general cases
+
+There are two ways this is done:
+1. by looking at the ancesters of the string node.
+  If it is an argument to a function we know doesn't expect raw bytes (such as `_()`, our translation function), then we dont need to consider it for correctness.
+2. excluding individual string values that are unlikely to be interpretted as raw bytes. There are many cases where we have hundreds of the same string value used on different lines.

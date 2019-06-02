@@ -4638,3 +4638,173 @@ class Test_asserts(FixerTestCase):
     def test_unchanged(self):
         self.unchanged('self.assertEqualsOnSaturday')
         self.unchanged('self.assertEqualsOnSaturday(3, 5)')
+
+
+class Test_nvdastrings(FixerTestCase):
+    fixer = "nvdastrings"
+
+    STR_MARKER = "p3_Str"
+    RAW_MARKER = "p3_Raw"
+
+    def _encase_raw(self, str):
+        marker = self.RAW_MARKER
+        return f"{marker}_ {str} _{marker}"
+
+    def _encase_str(self, str):
+        marker = self.STR_MARKER
+        return f"{marker}_ {str} _{marker}"
+
+    def test_unicode_literal_1(self):
+        b = '''u"x"'''
+        a = '''u"x"'''
+        self.check(b, a)
+
+    def test_unicode_literal_2(self):
+        b = """u'x'"""
+        a = """u'x'"""
+        self.check(b, a)
+
+    def test_raw_literal_1(self):
+        b = '''r"x"'''
+        a = self._encase_raw(b)
+        self.check(b, a)
+
+    def test_raw_literal_2(self):
+        b = """r'x'"""
+        a = self._encase_raw(b)
+        self.check(b, a)
+
+    def test_singleSpace(self):
+        b = r'" "'
+        a = b
+        self.check(b, a)
+
+    def test_no_literal(self):
+        b = """'x'"""
+        a = self._encase_str(b)
+        self.check(b, a)
+
+    def test_translationString(self):
+        b = """_('translateMe')"""
+        a = b
+        self.check(b, a)
+
+    def test_translationUString(self):
+        b = """_(u'translateMe')"""
+        a = b
+        self.check(b, a)
+
+    def test_translationRString(self):
+        b = """_(r'translateMe')"""
+        a = b
+        self.check(b, a)
+
+    def test_translationFormatString(self):
+        b = """_('translate {me}').format(me='me')"""
+        a = b
+        self.check(b, a)
+
+    def test_pGetTextString(self):
+        b = """pgettext('translateMe', "context")"""
+        a = b
+        self.check(b, a)
+
+    def test_pGetTextFormatString(self):
+        b = """pgettext('translate {me}', "context").format(me='me')"""
+        a = b
+        self.check(b, a)
+
+    def test_reString(self):
+        b = """re.compile('regex')"""
+        a = b
+        self.check(b, a)
+
+    def test_reUString(self):
+        b = """re.compile_(u'regex')"""
+        a = b
+        self.check(b, a)
+
+    def test_reRString(self):
+        b = """re.compile(r'regex')"""
+        a = b
+        self.check(b, a)
+
+    def test_reWithOptionsString(self):
+        b = """re.compile('regex', options)"""
+        a = b
+        self.check(b, a)
+
+    def test_logString(self):
+        b = """log.debug('message')"""
+        a = b
+        self.check(b, a)
+
+    def test_logWithOptionsString(self):
+        b = """log.error('message', options)"""
+        a = b
+        self.check(b, a)
+
+    def test_confString(self):
+        b = """conf['config']"""
+        a = b
+        self.check(b, a)
+
+    def test_configConfStringAssigned(self):
+        b = """config.conf['config'] = newval"""
+        a = b
+        self.check(b, a)
+
+    def test_configConfSub(self):
+        b = """config.conf['config']['another']"""
+        a = b
+        self.check(b, a)
+
+    def test_configStringAssigned(self):
+        b = """conf['config'] = newval"""
+        a = b
+        self.check(b, a)
+
+    def test_dictGet(self):
+        b = """something.get('key')"""
+        a = b
+        self.check(b, a)
+
+    def test_dictGetWithDefaultString(self):
+        b = """something.get('key', None)"""
+        a = b
+        self.check(b, a)
+
+    def test_stringJoin(self):
+        b = r'" ".join(blah)'
+        a = b
+        self.check(b, a)
+
+    def test_pathJoin(self):
+        b = r'path.join(path, "folder", "file")'
+        a = b
+        self.check(b, a)
+
+
+    def test_ospathJoin(self):
+        b = r'os.path.join(path, "folder", "file")'
+        a = b
+        self.check(b, a)
+
+    def test_pydoc(self):
+        b = '''def func():
+            """This is a pydoc
+            """
+        '''
+        a = b
+        self.check(b, a)
+
+    def test_emptyString1(self):
+        b = r'""'
+        a = b
+        self.check(b, a)
+
+    def test_emptyString2(self):
+        b = r"''"
+        a = b
+        self.check(b, a)
+
