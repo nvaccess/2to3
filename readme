@@ -1,0 +1,4 @@
+This is en extracted and modified version of the python 2to3 tool (from python 3.7.3)
+
+Python 3 should be used to execute it.
+Run with: `py -3 path/to/2to3 python2file.py`
